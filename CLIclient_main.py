@@ -10,6 +10,7 @@ async def send_message(websocket, message):
     outpacket = e.encrypt_packet(
         pickle.dumps(message), SERVER_CREDS['derived_key']
     )
+    print(outpacket)
     await websocket.send(outpacket)
     response = await websocket.recv()
     return await handle_resp(response)
@@ -30,28 +31,27 @@ async def main():
         print("1. Send epubkey to server")
         print("2. send packet")
         
+        con_id = str(uuid4())
+        await websocket.send(pickle.dumps({'type':'CONN_INIT', 'data':con_id}))
+        try:
+            key = await websocket.recv()
+            key = pickle.loads(key)
+            pubkey = s.load_pem_public_key(key['data'])
+            SERVER_CREDS['server_epbkey'] = pubkey
+            print("RECEIVED SERVER PUBLIC KEY")
+            SERVER_CREDS['derived_key'] = e.derive_key(
+                CLIENT_CREDS['client_eprkey'], pubkey, 'connection'
+            )
+            await websocket.send(pickle.dumps({'type':'CONN_ENCRYPT_C','data':CLIENT_CREDS['client_epbkey']}))
+
+        except websockets.exceptions.ConnectionClosedError as err:
+            print("Disconected from Server! Error:\n",err)
+            exit()
+        
         while True:
-            ch = int(input('> '))
-            if ch == 0:
-                con_id = input("Enter VALID UUID")# str(uuid4())
-                await websocket.send(con_id)
-                try:
-                    key = await websocket.recv()
-                    pubkey = s.load_pem_public_key(key)
-                    SERVER_CREDS['server_epbkey'] = pubkey
-                    print("RECEIVED SERVER PUBLIC KEY")
-                    SERVER_CREDS['derived_key'] = e.derive_key(
-                        CLIENT_CREDS['client_eprkey'], pubkey, 'connection'
-                    )
-                except websockets.exceptions.ConnectionClosedError as err:
-                    print("Disconected from Server! Error:\n",err)
-                    exit()
-            elif ch == 1:
-                await websocket.send(CLIENT_CREDS['client_epbkey'])
-            else:
-                type = input('Enter Packet Type: ')
-                data = eval(input("Enter Packet Data: "))
-                await send_message(websocket, {'type':type, 'data':data})
+            type = input('Enter Packet Type: ')
+            data = eval(input("Enter Packet Data: "))
+            await send_message(websocket, {'type':type, 'data':data})
 
 SERVER_CREDS = {}
 CLIENT_CREDS = {}
