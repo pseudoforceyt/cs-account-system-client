@@ -2,6 +2,7 @@ import asyncio
 import websockets
 from cryptography.hazmat.primitives import serialization as s
 from client_modules import encryption as e
+from client_modules import packet_handling as p
 from uuid import uuid4
 import pickle
 from sys import exit
@@ -12,15 +13,14 @@ async def send_message(websocket, message):
     )
     await websocket.send(outpacket)
     response = await websocket.recv()
-    return await handle_resp(response)
+    return await handle_resp(websocket, response)
 
-async def handle_resp(response):
+async def handle_resp(websocket, response):
     inpacket = e.decrypt_packet(response, CLIENT_CREDS['client_eprkey'])
-#    type = inpacket['type']
-#    data = inpacket['data']
-#    p.handle(SERVER_CREDS, de_packet) # handle here using type and data
+    print(inpacket)
+    handled = await p.handle(SERVER_CREDS, CLIENT_CREDS, websocket, inpacket) # handle here using type and data
     print('resposne handaled')
-    return None
+    return handled
 
 async def main():
     uri = "ws://ilamparithi.ddns.net:6969"
