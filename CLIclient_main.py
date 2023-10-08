@@ -8,29 +8,23 @@ from sys import exit
 
 async def send_message(websocket, message):
     outpacket = e.encrypt_packet(
-        pickle.dumps(message), SERVER_CREDS['derived_key']
+        message, SERVER_CREDS['server_epbkey']
     )
-    print(outpacket)
     await websocket.send(outpacket)
     response = await websocket.recv()
     return await handle_resp(response)
 
 async def handle_resp(response):
-    inpacket = e.decrypt_packet(pickle.loads(response), SERVER_CREDS['derived_key'])
-    de_packet = pickle.loads(inpacket)
-    type = de_packet['type']
-    data = de_packet['data']
-    print(data) # handle here using type and data
+    inpacket = e.decrypt_packet(response, CLIENT_CREDS['client_eprkey'])
+#    type = inpacket['type']
+#    data = inpacket['data']
+#    p.handle(SERVER_CREDS, de_packet) # handle here using type and data
+    print('resposne handaled')
     return None
 
 async def main():
     uri = "ws://ilamparithi.ddns.net:6969"
     async with websockets.connect(uri, ping_interval=30) as websocket:
-        print('wtf do you want to do?')
-        print("0. Establish secure connection")
-        print("1. Send epubkey to server")
-        print("2. send packet")
-        
         con_id = str(uuid4())
         await websocket.send(pickle.dumps({'type':'CONN_INIT', 'data':con_id}))
         try:
@@ -39,10 +33,8 @@ async def main():
             pubkey = s.load_pem_public_key(key['data'])
             SERVER_CREDS['server_epbkey'] = pubkey
             print("RECEIVED SERVER PUBLIC KEY")
-            SERVER_CREDS['derived_key'] = e.derive_key(
-                CLIENT_CREDS['client_eprkey'], pubkey, 'connection'
-            )
             await websocket.send(pickle.dumps({'type':'CONN_ENCRYPT_C','data':CLIENT_CREDS['client_epbkey']}))
+            print(e.decrypt_packet(await websocket.recv(), CLIENT_CREDS['client_eprkey']))
 
         except websockets.exceptions.ConnectionClosedError as err:
             print("Disconected from Server! Error:\n",err)
@@ -51,13 +43,14 @@ async def main():
         while True:
             type = input('Enter Packet Type: ')
             data = eval(input("Enter Packet Data: "))
-            await send_message(websocket, {'type':type, 'data':data})
+            print(await send_message(websocket, {'type':type, 'data':data}))
+
 
 SERVER_CREDS = {}
 CLIENT_CREDS = {}
 
 if __name__ == '__main__':
-    client_eprkey, client_epbkey = e.create_key_pair()
+    client_eprkey, client_epbkey = e.create_conn_key_pair()
     CLIENT_CREDS['client_eprkey'] = client_eprkey
     CLIENT_CREDS['client_epbkey'] = e.ser_key_pem(client_epbkey, 'public')
     asyncio.get_event_loop().run_until_complete(main())
