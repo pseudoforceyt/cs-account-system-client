@@ -2,7 +2,7 @@ import asyncio
 import websockets
 from cryptography.hazmat.primitives import serialization as s
 from client_modules import encryption as e
-from client_modules import packet_handling as p
+from client_modules import packet_handler as p
 from uuid import uuid4
 import pickle
 from sys import exit
@@ -23,7 +23,9 @@ async def handle_resp(websocket, response):
     return handled
 
 async def main():
-    uri = "ws://ilamparithi.ddns.net:6969"
+    host = input("Enter hostname of server: ")
+    port = int(input("Enter port: "))
+    uri = f"ws://{host}:{port}"
     async with websockets.connect(uri, ping_interval=30) as websocket:
         con_id = str(uuid4())
         await websocket.send(pickle.dumps({'type':'CONN_INIT', 'data':con_id}))
@@ -55,3 +57,35 @@ if __name__ == '__main__':
     CLIENT_CREDS['client_epbkey'] = e.ser_key_pem(client_epbkey, 'public')
     asyncio.get_event_loop().run_until_complete(main())
     asyncio.get_event_loop().run_forever()
+
+"""
+import asyncio
+import websockets
+
+# Define the server URI
+uri = "ws://localhost:8765"
+
+# Function to handle incoming messages from the server
+async def handle_incoming_messages(websocket):
+    async for message in websocket:
+        # Handle the message here
+        print(f"Received message: {message}")
+
+# Function to handle outgoing messages to the server
+async def handle_outgoing_messages(websocket):
+    while True:
+        message = await asyncio.get_event_loop().run_in_executor(None, input, "Enter a message: ")
+        await websocket.send(message)
+
+# Main function to connect to the server and start the message handlers
+async def main():
+    async with websockets.connect(uri) as websocket:
+        # Start the message handlers
+        await asyncio.gather(
+            handle_incoming_messages(websocket),
+            handle_outgoing_messages(websocket),
+        )
+
+# Run the main function
+asyncio.run(main())
+"""
