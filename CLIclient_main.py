@@ -13,7 +13,7 @@ async def send_message(websocket, message):
     )
     await websocket.send(outpacket)
     response = await websocket.recv()
-    return await handle_resp(websocket, response)
+    return await recv_message(websocket, response)
 
 async def handle_resp(websocket, response):
     inpacket = e.decrypt_packet(response, CLIENT_CREDS['client_eprkey'])
@@ -21,6 +21,12 @@ async def handle_resp(websocket, response):
     handled = await p.handle(SERVER_CREDS, CLIENT_CREDS, websocket, inpacket) # handle here using type and data
     print('resposne handaled')
     return handled
+
+async def recv_message(websocket, message):
+    inpacket = e.decrypt_packet(message, CLIENT_CREDS['client_eprkey'])
+    # handle check
+    await p.handle(SERVER_CREDS, CLIENT_CREDS, websocket, inpacket)
+
 
 async def main():
     host = input("Enter hostname of server: ")
@@ -43,9 +49,14 @@ async def main():
             exit()
         
         while True:
-            type = input('Enter Packet Type: ')
-            data = eval(input("Enter Packet Data: "))
-            print(await send_message(websocket, {'type':type, 'data':data}))
+            try:
+                await asyncio.gather(
+                    send_message(websocket),
+                    recv_message(websocket, await websocket.recv()),
+                )
+            except Exception as eroa:
+                print("Disconected from Server! Error:\n",eroa)
+                exit()
 
 
 SERVER_CREDS = {}
@@ -61,21 +72,6 @@ if __name__ == '__main__':
 """
 import asyncio
 import websockets
-
-# Define the server URI
-uri = "ws://localhost:8765"
-
-# Function to handle incoming messages from the server
-async def handle_incoming_messages(websocket):
-    async for message in websocket:
-        # Handle the message here
-        print(f"Received message: {message}")
-
-# Function to handle outgoing messages to the server
-async def handle_outgoing_messages(websocket):
-    while True:
-        message = await asyncio.get_event_loop().run_in_executor(None, input, "Enter a message: ")
-        await websocket.send(message)
 
 # Main function to connect to the server and start the message handlers
 async def main():
