@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import pickle
 from . import encryption as en
+from getpass import getpass
 
 sig_map = {
     'CONN_OK':"Connection to the server was successful",
@@ -35,6 +36,8 @@ sig_map = {
 }
 
 async def status(SERVER_CREDS, CLIENT_CREDS, websocket, data):
+    if data['sig'] == 'CHAT_PUBKEY_MISSING':
+        await send_pubkey(SERVER_CREDS, CLIENT_CREDS, websocket)
     print(sig_map[data['sig']])
 
 async def captcha(SERVER_CREDS, CLIENT_CREDS, websocket, data):
@@ -47,12 +50,40 @@ async def captcha(SERVER_CREDS, CLIENT_CREDS, websocket, data):
     await websocket.send(outpacket)
     return en.decrypt_packet(await websocket.recv(), CLIENT_CREDS['client_eprkey'])
 
-async def signup(SERVER_CREDS, CLIENT_CREDS, websocket, data):
+# async def send_pubkey(SERVER_CREDS, CLIENT_CREDS, websocket):
+
+
+def signup(SERVER_CREDS, CLIENT_CREDS, websocket, de_p):
+    data = {}
+    data['user'] = input("Enter your username: ")
+    data['email'] = input("Enter your email: ")
+    data['fullname'] = input("Enter your full name: ")
+    data['dob'] = input("Enter your date of birth (YYYY-MM-DD or DD-MM-YYYY): ")
+    pwd = getpass("Enter your password: ")
+    if pwd == getpass("Confirm your password: "):
+        data['password'] = pwd
+    else:
+        return 'ERR_CONFIRM'
+    return en.encrypt_packet({'type':'SIGNUP', 'data':data}, SERVER_CREDS['server_epbkey'])
     
+def login(SERVER_CREDS, CLIENT_CREDS, websocket, de_p):
+    # {'type':'LOGIN', 'data':{'id':username/email,'password':password,'save':True or False}}
+    data = {}
+    data['id'] = input("Enter username/email: ")
+    data['password'] = getpass("Enter your password: ")
+    if input("Save login? No need to re-login for 30 days (y/N)").lower() == 'y':
+        data['save'] = True
+    else:
+        data['save'] = False
+    return en.encrypt_packet({'type':'LOGIN', 'data':data}, SERVER_CREDS['server_epbkey'])
+
+
 
 packet_map = {
     'STATUS':status,
     'CAPTCHA':captcha,
+#    'TOKEN_GEN':save_token,
+
 }   
 async def handle(SERVER_CREDS, CLIENT_CREDS, websocket, de_packet):
     type = de_packet['type']

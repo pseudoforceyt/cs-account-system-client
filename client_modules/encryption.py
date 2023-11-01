@@ -5,15 +5,19 @@ from cryptography.hazmat.primitives import padding as spadding
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 ### For chat operations
-#from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-#from cryptography.hazmat.primitives.asymmetric import ec
-#from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-#from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+# from cryptography.hazmat.primitives.asymmetric import ec
+# from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+# from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from os import urandom
+from getpass import getpass
+from base64 import urlsafe_b64encode
+import pickle
+import i18n
 import pickle
 
 
-def create_conn_key_pair():
+def create_rsa_key_pair():
     # Generate a 2048-bit RSA private key
     private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -23,11 +27,23 @@ def create_conn_key_pair():
     public_key = private_key.public_key()
     return private_key, public_key
 
-def ser_key_pem(key: rsa.RSAPublicKey, type: str):
-    return key.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo
-    )
+def ser_key_pem(key, type: str):
+    if type == 'public':
+        return key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+    elif type == 'private':
+        return key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+def deser_pem(key, type):
+    if type == 'public':
+        return serialization.load_pem_public_key(key)
+    elif type == 'private':
+        return serialization.load_pem_private_key(key, password=None)
 
 def encrypt_packet(data, pubkey):
     data = pickle.dumps(data)
@@ -79,6 +95,28 @@ def decrypt_packet(encrypted_data, privkey):
     except Exception as error:
         return {'type':'decrypt_error','data':f'{error}'}
 
+def fernet_initkey(workingdir):
+    passwd = ''
+    while True:
+        passwd = getpass(i18n.firstrun.passwd.input)
+        confirm = getpass(i18n.firstrun.passwd.confirm)
+        if passwd == confirm:
+            break
+        else:
+            print(i18n.firstrun.passwd.retry)
+    # Generate a Fernet key with the password and save the salt
+    salt = urandom(16)
+    with open(f"{workingdir}/creds/salt", "wb") as f:
+        f.write(salt)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=600000,
+    )
+    key = urlsafe_b64encode(kdf.derive(bytes(passwd, 'utf-8')))
+    key = Fernet(key)
+    return key
     
 """ THIS PART OF THE MODULE IS RESERVED FOR CHAT OPERATIONS """
 
