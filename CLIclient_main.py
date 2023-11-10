@@ -147,7 +147,7 @@ if __name__ == '__main__':
             pem_pubkey = f.read()
             pubkey = en.deser_pem(pem_pubkey, 'public')
     except FileNotFoundError:
-        print("Could not find packet queue public key. Server will now generate it from the private key.")
+        print("Could not find chat encryption public key. Client will now generate it from the private key.")
         try:
             with open(f'{workingdir}/creds/chat_privatekey', 'rb') as f:
                 en_pem_prkey = f.read()
@@ -158,8 +158,8 @@ if __name__ == '__main__':
             with open(f'{workingdir}/creds/chat_publickey', 'wb') as f:
                 f.write(pem_pubkey)
         except FileNotFoundError:
-            print("Could not find packet queue keypair. Server will now generate it again.")
-            ch = input("This will cause previously unsent packets in the queue to be lost. Continue? (y/n) > ")
+            print("Could not find chat encryption keypair. Client will now generate it again.")
+            ch = input("THIS OPERATION IS NOT SUPPORTED YET. Continue? (y/n) > ")
             if ch.lower() == 'y':
                 db.clear_queue(user=None)
                 first_run.save_chat_keypair(fkey, workingdir)

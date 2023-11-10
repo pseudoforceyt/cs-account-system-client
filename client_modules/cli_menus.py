@@ -1,4 +1,5 @@
-import os
+import os, sys
+from . import packet_handler as p
 
 def cls():
     # for windows
@@ -25,4 +26,19 @@ def main_menu():
  #@:   .:%%======#@* @#-----==*@* -@%+#@#+=#@= +@=                 
 .#@%%%%%%##*+++++=:. =******+++=.  :===+==++-  +@=            CHAT""")
         print("Welcome!")
-        print()
+        print("Choose an operation:")
+        print("1. Sign up")
+        print("2. Log in")
+        print("3. Exit")
+        c = int(input("> "))
+        match c:
+            case 1:
+                signup()
+            case 2:
+                login()
+            case 3:
+                print("Goodbye!")
+                sys.exit()
+
+def signup():
+    p.signup()
