@@ -2,6 +2,7 @@ import os
 from i18n import firstrun
 from yaml import dump as dumpyaml
 from . import encryption as e
+from . import db_handler as db
 try: 
     from tkinter import filedialog
 except:
@@ -60,8 +61,10 @@ def main():
     print(firstrun.welcome_message)
     print(firstrun.setup_client_dir)
     workingdir = setup_client_dir()
-    fkey = e.fernet_initkey(workingdir)
+    fkey, passwd = e.fernet_initkey(workingdir)
     save_chat_keypair(fkey, workingdir)
+    db.create_db(workingdir) # todo : add password protection
+    del passwd
     del fkey
     print("You will be able to change these later")
     host = input("Enter Homeserver Address: ")

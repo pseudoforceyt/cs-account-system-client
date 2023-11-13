@@ -14,7 +14,7 @@ import pickle
 from sys import exit
 
 async def send_message(websocket, message):
-    outpacket = en.encrypt_packet(
+    outpacket = en.encrypt_data(
         message, SERVER_CREDS['server_epbkey']
     )
     await websocket.send(outpacket)
@@ -22,14 +22,14 @@ async def send_message(websocket, message):
     return await recv_message(websocket, response)
 
 async def handle_resp(websocket, response):
-    inpacket = en.decrypt_packet(response, CLIENT_CREDS['client_eprkey'])
+    inpacket = en.decrypt_data(response, CLIENT_CREDS['client_eprkey'])
     print(inpacket)
     handled = await p.handle(SERVER_CREDS, CLIENT_CREDS, websocket, inpacket) # handle here using type and data
     print('resposne handaled')
     return handled
 
 async def recv_message(websocket, message):
-    inpacket = en.decrypt_packet(message, CLIENT_CREDS['client_eprkey'])
+    inpacket = en.decrypt_data(message, CLIENT_CREDS['client_eprkey'])
     # handle check
     await p.handle(SERVER_CREDS, CLIENT_CREDS, websocket, inpacket)
 
@@ -89,7 +89,7 @@ async def main(host, port):
             SERVER_CREDS['server_epbkey'] = pubkey
             print("RECEIVED SERVER PUBLIC KEY")
             await websocket.send(pickle.dumps({'type':'CONN_ENCRYPT_C','data':CLIENT_CREDS['client_epbkey']}))
-            print(en.decrypt_packet(await websocket.recv(), CLIENT_CREDS['client_eprkey']))
+            print(en.decrypt_data(await websocket.recv(), CLIENT_CREDS['client_eprkey']))
 
         except websockets.exceptions.ConnectionClosedError as err:
             print("Disconected from Server! Error:\n",err)

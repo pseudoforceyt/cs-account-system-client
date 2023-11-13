@@ -1,8 +1,10 @@
 import asyncio
 import websockets
 import pickle
+import os
 from . import encryption as en
 from getpass import getpass
+from yaml import load as loadyaml
 
 sig_map = {
     'CONN_OK':"Connection to the server was successful",
@@ -46,11 +48,14 @@ async def captcha(SERVER_CREDS, CLIENT_CREDS, websocket, data):
     print("Open the captcha.png in the client folder and enter the digits here:")
     solved = int(input("> "))
     solved_packet = pickle.dumps({'type':'S_CAPTCHA', 'data':{'solved':solved}})
-    outpacket = en.encrypt_packet(solved_packet, SERVER_CREDS['server_epbkey'])
+    outpacket = en.encrypt_data(solved_packet, SERVER_CREDS['server_epbkey'])
     await websocket.send(outpacket)
-    return en.decrypt_packet(await websocket.recv(), CLIENT_CREDS['client_eprkey'])
+    return en.decrypt_data(await websocket.recv(), CLIENT_CREDS['client_eprkey'])
 
-# async def send_pubkey(SERVER_CREDS, CLIENT_CREDS, websocket):
+async def send_pubkey(SERVER_CREDS, CLIENT_CREDS, websocket):
+    rootdir = os.path.dirname(os.path.abspath(__file__))
+    f = open(f'{rootdir}/config.yml', 'r+')
+    yaml = loadyaml(f.read())
 
 
 def signup(SERVER_CREDS, CLIENT_CREDS, websocket, de_p):
@@ -64,7 +69,7 @@ def signup(SERVER_CREDS, CLIENT_CREDS, websocket, de_p):
         data['password'] = pwd
     else:
         return 'ERR_CONFIRM'
-    return en.encrypt_packet({'type':'SIGNUP', 'data':data}, SERVER_CREDS['server_epbkey'])
+    return en.encrypt_data({'type':'SIGNUP', 'data':data}, SERVER_CREDS['server_epbkey'])
     
 def login(SERVER_CREDS, CLIENT_CREDS, websocket, de_p):
     # {'type':'LOGIN', 'data':{'id':username/email,'password':password,'save':True or False}}
@@ -75,7 +80,7 @@ def login(SERVER_CREDS, CLIENT_CREDS, websocket, de_p):
         data['save'] = True
     else:
         data['save'] = False
-    return en.encrypt_packet({'type':'LOGIN', 'data':data}, SERVER_CREDS['server_epbkey'])
+    return en.encrypt_data({'type':'LOGIN', 'data':data}, SERVER_CREDS['server_epbkey'])
 
 
 

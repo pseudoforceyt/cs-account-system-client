@@ -45,7 +45,7 @@ def deser_pem(key, type):
     elif type == 'private':
         return serialization.load_pem_private_key(key, password=None)
 
-def encrypt_packet(data, pubkey):
+def encrypt_data(data, pubkey):
     data = pickle.dumps(data)
     # Generate symmetric key and encrypt it
     skey = urandom(32)
@@ -69,7 +69,7 @@ def encrypt_packet(data, pubkey):
 
     return pickle.dumps({'skey':encrypted_skey, 'cbc':cbc, 'ciphertext':ciphertext})
 
-def decrypt_packet(encrypted_data, privkey):
+def decrypt_data(encrypted_data, privkey):
     try:
         # Decrypt our symmetric key
         packet = pickle.loads(encrypted_data)
@@ -116,7 +116,7 @@ def fernet_initkey(workingdir):
     )
     key = urlsafe_b64encode(kdf.derive(bytes(passwd, 'utf-8')))
     key = Fernet(key)
-    return key
+    return key, passwd
     
 """ THIS PART OF THE MODULE IS RESERVED FOR CHAT OPERATIONS """
 

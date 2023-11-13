@@ -43,6 +43,10 @@ class db:
     con = None
     cur = None
 
+def create_db(workingdir): # todo: add password protection
+    conn = sqlite3.connect(f'{workingdir}/DATA.db')
+    conn.close()
+    
 def decrypt_creds(fkey, workingdir):
     with open(f'{workingdir}/creds/db', 'rb') as f:
         data = f.read()
@@ -51,10 +55,9 @@ def decrypt_creds(fkey, workingdir):
     try:
         setattr(db, 'con', sqlite3.connect(dict['file']))
         setattr(db, 'cur', db.con.cursor())
-        if db.con.is_connected():
-            print('[INFO] Connected to database ',dict['host'],':',dict['port'],sep='')
-    except sqltor.errors.ProgrammingError as errrr:
-        print('[ERROR] Could not connect to database:', errrr)
+        print('[INFO] Loaded Database')
+    except Exception as e:
+        print('[ERROR] Could not load database:', e)
 
 # # Create a connection object with the database
 # conn = sqlite3.connect('my_database.db')
