@@ -87,8 +87,7 @@ def login(SERVER_CREDS, CLIENT_CREDS, websocket, de_p):
 packet_map = {
     'STATUS':status,
     'CAPTCHA':captcha,
-#    'TOKEN_GEN':save_token,
-
+    'TOKEN_GEN':save_token
 }   
 async def handle(SERVER_CREDS, CLIENT_CREDS, websocket, de_packet):
     type = de_packet['type']

@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives import serialization as s
 from client_modules import encryption as en
 from client_modules import packet_handler as p
 from client_modules import db_handler as db
+from client_modules import cli_menus as cli
 from client_modules import first_run
 from uuid import uuid4
 import i18n
@@ -98,7 +99,7 @@ async def main(host, port):
         while True:
             try:
                 await asyncio.gather(
-                    send_message(websocket),
+                    send_message(websocket, cli.main_menu()),
                     recv_message(websocket, await websocket.recv()),
                 )
             except Exception as eroa:
@@ -142,54 +143,5 @@ if __name__ == '__main__':
         print(i18n.firstrun.exit)
         exit()
 
-    try:
-        with open(f'{workingdir}/creds/chat_publickey', 'rb') as f:
-            pem_pubkey = f.read()
-            pubkey = en.deser_pem(pem_pubkey, 'public')
-    except FileNotFoundError:
-        print("Could not find chat encryption public key. Client will now generate it from the private key.")
-        try:
-            with open(f'{workingdir}/creds/chat_privatekey', 'rb') as f:
-                en_pem_prkey = f.read()
-            pem_prkey = fkey.decrypt(en_pem_prkey)
-            prkey = en.deser_pem(pem_prkey, 'private')
-            pubkey = prkey.public_key()
-
-            with open(f'{workingdir}/creds/chat_publickey', 'wb') as f:
-                f.write(pem_pubkey)
-        except FileNotFoundError:
-            print("Could not find chat encryption keypair. Client will now generate it again.")
-            ch = input("THIS OPERATION IS NOT SUPPORTED YET. Continue? (y/n) > ")
-            if ch.lower() == 'y':
-                db.clear_queue(user=None)
-                first_run.save_chat_keypair(fkey, workingdir)
-                print(i18n.firstrun.exit)
-                exit()
-            if ch.lower() == 'n':
-                print("Key ah kaanume enna panradhu ippo?")
-                exit()
-    else:
-        with open(f'{workingdir}/creds/chat_privatekey', 'rb') as f:
-            en_pem_prkey = f.read()
-            pem_prkey = fkey.decrypt(en_pem_prkey)
-            prkey = en.deser_pem(pem_prkey, 'private')
-
     asyncio.get_event_loop().run_until_complete(main(host,port))
     asyncio.get_event_loop().run_forever()
-
-"""
-import asyncio
-import websockets
-
-# Main function to connect to the server and start the message handlers
-async def main():
-    async with websockets.connect(uri) as websocket:
-        # Start the message handlers
-        await asyncio.gather(
-            handle_incoming_messages(websocket),
-            handle_outgoing_messages(websocket),
-        )
-
-# Run the main function
-asyncio.run(main())
-"""
