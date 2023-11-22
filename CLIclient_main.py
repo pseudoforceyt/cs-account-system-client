@@ -1,10 +1,10 @@
 import asyncio
 import websockets
 import os
+import threading
 from cryptography.hazmat.primitives import serialization as s
 from client_modules import encryption as en
 from client_modules import packet_handler as p
-from client_modules import db_handler as db
 from client_modules import cli_menus as cli
 from client_modules import first_run
 from uuid import uuid4
@@ -15,32 +15,21 @@ import pickle
 from sys import exit
 
 async def send_message(websocket, message):
-    outpacket = en.encrypt_data(
-        message, SERVER_CREDS['server_epbkey']
-    )
-    await websocket.send(outpacket)
-    response = await websocket.recv()
-    return await recv_message(websocket, response)
-
-async def handle_resp(websocket, response):
-    inpacket = en.decrypt_data(response, CLIENT_CREDS['client_eprkey'])
-    print(inpacket)
-    handled = await p.handle(SERVER_CREDS, CLIENT_CREDS, websocket, inpacket) # handle here using type and data
-    print('resposne handaled')
-    return handled
+    if message:
+        await websocket.send(message)
 
 async def recv_message(websocket, message):
     inpacket = en.decrypt_data(message, CLIENT_CREDS['client_eprkey'])
     # handle check
-    await p.handle(SERVER_CREDS, CLIENT_CREDS, websocket, inpacket)
+    outpacket = await p.handle(SERVER_CREDS, CLIENT_CREDS, websocket, inpacket)
+    if not outpacket:
+        await websocket.send(outpacket)
+    else:
+        pass
 
 def execute_firstrun():
     first_run.main()
     print(i18n.firstrun.security)
-    db.decrypt_creds(en.fermat_gen(first_run.working_dir.workingdir), first_run.working_dir.workingdir)
-    print(i18n.firstrun.initialize_db)
-    db.initialize_schemas()
-    db.close()
     print(i18n.firstrun.exit)
     exit()
 
@@ -80,7 +69,7 @@ def fill_missing_config(f, yaml, config):
 
 async def main(host, port):
     uri = f"ws://{host}:{port}"
-    async with websockets.connect(uri, ping_interval=30) as websocket:
+    async with websockets.connect(uri, ping_interval=120) as websocket:
         con_id = str(uuid4())
         await websocket.send(pickle.dumps({'type':'CONN_INIT', 'data':con_id}))
         try:
@@ -95,13 +84,10 @@ async def main(host, port):
         except websockets.exceptions.ConnectionClosedError as err:
             print("Disconected from Server! Error:\n",err)
             exit()
-        
+
         while True:
             try:
-                await asyncio.gather(
-                    send_message(websocket, cli.main_menu()),
-                    recv_message(websocket, await websocket.recv()),
-                )
+                await send_message(websocket, await cli.main_menu(SERVER_CREDS, CLIENT_CREDS, websocket, workingdir))
             except Exception as eroa:
                 print("Disconected from Server! Error:\n",eroa)
                 exit()
@@ -133,15 +119,7 @@ if __name__ == '__main__':
         execute_firstrun()
 
     workingdir = yaml['working_directory']
+    CLIENT_CREDS['workingdir'] = workingdir
     host, port = yaml['homeserver_address'], yaml['homeserver_port']
 
-    try:
-        fkey = en.fermat_gen(workingdir)
-        db.decrypt_creds(fkey, workingdir)
-    except Exception as w:
-        print("Error while decrypting database credentials. Check your password\n", w)
-        print(i18n.firstrun.exit)
-        exit()
-
-    asyncio.get_event_loop().run_until_complete(main(host,port))
-    asyncio.get_event_loop().run_forever()
+    asyncio.run(main(host,port))

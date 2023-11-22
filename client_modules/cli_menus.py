@@ -1,5 +1,6 @@
 import os, sys
 from . import packet_handler as p
+import asyncio
 
 def cls():
     # for windows
@@ -9,24 +10,38 @@ def cls():
     else:
         _ = os.system('clear')
 
-def main_menu():
+async def main_menu(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
+    print("Account System Demonstration Frontend")
+    print("Welcome!")
+    print("Available Operations:")
+    print("> signup\t(Sign up)")
+    print("> login \t(Log in)")
+    print("> auth  \t(Authenticate)")
+    print("> logout\t(Logout)")
+    print("> exit  \t(Exit)")
     while True:
-        cls()
-        print("Account System Demonstration Frontend")
-        print("Welcome!")
-        print("Choose an operation:")
-        print("1. Sign up")
-        print("2. Log in")
-        print("3. Exit")
-        c = int(input("> "))
+        print("What would you like to do?")
+        c = input("> ").lower()
         match c:
-            case 1:
-                p.signup()
-            case 2:
-                p.login()
-            case 3:
+            case 'signup':
+                cls()
+                return await p.signup(SERVER_CREDS, CLIENT_CREDS, websocket, dir)
+            case 'login':
+                cls()
+                return await p.login(SERVER_CREDS, CLIENT_CREDS, websocket, dir)
+            case 'auth':
+                cls()
+                return await p.auth(SERVER_CREDS, CLIENT_CREDS, websocket, dir)
+            case 'logout':
+                cls()
+                flag = await p.logout(SERVER_CREDS, CLIENT_CREDS, websocket, dir)
+                if flag == 'CANCELLED':
+                    print("Cancelled.")
+                    continue
+                else:
+                    return flag
+            case 'exit':
                 print("Goodbye!")
                 sys.exit()
-
-def signup():
-    p.signup()
+            case other:
+                print("Enter a valid operation.")
