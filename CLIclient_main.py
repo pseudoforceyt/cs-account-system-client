@@ -29,10 +29,8 @@ async def recv_message(websocket, message):
 
 def execute_firstrun():
     first_run.main()
-    print(i18n.firstrun.security)
     print(i18n.firstrun.exit)
     exit()
-
 
 def check_missing_config(f, yaml, config):
     try:
