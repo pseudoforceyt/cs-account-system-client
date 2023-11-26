@@ -14,9 +14,11 @@ from yaml import dump as dumpyaml
 import pickle
 from sys import exit
 
+
 async def send_message(websocket, message):
     if message:
         await websocket.send(message)
+
 
 async def recv_message(websocket, message):
     inpacket = en.decrypt_data(message, CLIENT_CREDS['client_eprkey'])
@@ -27,10 +29,12 @@ async def recv_message(websocket, message):
     else:
         pass
 
+
 def execute_firstrun():
     first_run.main()
     print(i18n.firstrun.exit)
     exit()
+
 
 def check_missing_config(f, yaml, config):
     try:
@@ -65,29 +69,30 @@ def fill_missing_config(f, yaml, config):
     f.seek(0)
     f.write(dumpyaml(yaml))
 
+
 async def main(host, port):
     uri = f"ws://{host}:{port}"
     async with websockets.connect(uri, ping_interval=120) as websocket:
         con_id = str(uuid4())
-        await websocket.send(pickle.dumps({'type':'CONN_INIT', 'data':con_id}))
+        await websocket.send(pickle.dumps({'type': 'CONN_INIT', 'data': con_id}))
         try:
             key = await websocket.recv()
             key = pickle.loads(key)
             pubkey = s.load_pem_public_key(key['data'])
             SERVER_CREDS['server_epbkey'] = pubkey
             print("RECEIVED SERVER PUBLIC KEY")
-            await websocket.send(pickle.dumps({'type':'CONN_ENCRYPT_C','data':CLIENT_CREDS['client_epbkey']}))
+            await websocket.send(pickle.dumps({'type': 'CONN_ENCRYPT_C', 'data': CLIENT_CREDS['client_epbkey']}))
             print(en.decrypt_data(await websocket.recv(), CLIENT_CREDS['client_eprkey']))
 
-        except websockets.exceptions.ConnectionClosedError as err:
-            print("Disconected from Server! Error:\n",err)
+        except websockets.exceptions.ConnectionClosedError as error:
+            print("Disconnected from Server! Error:\n", error)
             exit()
 
         while True:
             try:
                 await send_message(websocket, await cli.main_menu(SERVER_CREDS, CLIENT_CREDS, websocket, workingdir))
-            except Exception as eroa:
-                print("Disconected from Server! Error:\n",eroa)
+            except Exception as e:
+                print("Disconnected from Server! Error:\n", e)
                 exit()
 
 
@@ -120,4 +125,4 @@ if __name__ == '__main__':
     CLIENT_CREDS['workingdir'] = workingdir
     host, port = yaml['homeserver_address'], yaml['homeserver_port']
 
-    asyncio.run(main(host,port))
+    asyncio.run(main(host, port))

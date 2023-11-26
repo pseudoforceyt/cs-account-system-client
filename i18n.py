@@ -1,4 +1,4 @@
-class firstrun():
+class firstrun:
     prompt1 = "Could not determine client's "
     empty_config = "Client configuration is empty. Deleting..."
     prompt2 = "Is this the first time you are running the client?"
@@ -14,7 +14,8 @@ class firstrun():
     hs_addr = "Enter Homeserver Address: "
     hs_port = "Enter Homeserver Port: "
 
-class savedata():
+
+class savedata:
     gui = "Opening file chooser dialog..."
     nogui = "Cannot open file chooser! Enter the path manually:"
     error = "An error occurred"
@@ -26,7 +27,8 @@ class savedata():
     created_new = "Created Client folder successfully."
     data_exists = "Previous Installation Detected! Please delete the files or choose another folder."
 
-class demo():
+
+class demo:
     captcha_p = "Open the captcha.png in the client folder and enter the digits here:"
     user_p = "Enter your username: "
     email_p = "Enter your email: "
@@ -48,18 +50,20 @@ class demo():
     end = "You have been logged in successfully.\nYour session is now active and this concludes the demonstration.\nIf you exit the app and decide to login again, you can use > auth to do it."
 
 
-class log():
-    class tags():
+class log:
+    class tags:
         info = '[INFO] '
         warn = '[WARN] '
         error = '[ERR] '
         debug = '[DEBUG] '
+
     client_start = "Client starting from path {0}...."
     handle_packet = "Handling packet {}..."
 
+
 sig_map = {
-    'CONN_OK':"Connection to the server was successful",
-    'CAPTCHA_WRONG':"The CAPTCHA code you entered was wrong. Try performing the action again",
+    'CONN_OK': "Connection to the server was successful",
+    'CAPTCHA_WRONG': "The CAPTCHA code you entered was wrong. Try performing the action again",
     'SIGNUP_MISSING_CREDS': 'A field in your signup form is empty. Please signup again properly',
     'SIGNUP_USERNAME_ABOVE_LIMIT': 'Username exceeds 32 character limit',
     'SIGNUP_USERNAME_ALREADY_EXISTS': 'Username already exists',

@@ -2,6 +2,7 @@ import os, sys
 from . import packet_handler as p
 import asyncio
 
+
 def cls():
     # for windows
     if os.name == 'nt':
@@ -10,7 +11,8 @@ def cls():
     else:
         _ = os.system('clear')
 
-async def main_menu(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
+
+async def main_menu(SERVER_CREDS, CLIENT_CREDS, websocket, wdir):
     print("Account System Demonstration Frontend")
     print("Welcome!")
     print("Available Operations:")
@@ -25,16 +27,16 @@ async def main_menu(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
         match c:
             case 'signup':
                 cls()
-                return await p.signup(SERVER_CREDS, CLIENT_CREDS, websocket, dir)
+                return await p.signup(SERVER_CREDS, CLIENT_CREDS, websocket, wdir)
             case 'login':
                 cls()
-                return await p.login(SERVER_CREDS, CLIENT_CREDS, websocket, dir)
+                return await p.login(SERVER_CREDS, CLIENT_CREDS, websocket, wdir)
             case 'auth':
                 cls()
-                return await p.auth(SERVER_CREDS, CLIENT_CREDS, websocket, dir)
+                return await p.auth(SERVER_CREDS, CLIENT_CREDS, websocket, wdir)
             case 'logout':
                 cls()
-                flag = await p.logout(SERVER_CREDS, CLIENT_CREDS, websocket, dir)
+                flag = await p.logout(SERVER_CREDS, CLIENT_CREDS, websocket, wdir)
                 if flag == 'CANCELLED':
                     print("Cancelled.")
                     continue

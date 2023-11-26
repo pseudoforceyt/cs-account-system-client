@@ -27,6 +27,7 @@ def create_rsa_key_pair():
     public_key = private_key.public_key()
     return private_key, public_key
 
+
 def ser_key_pem(key, type: str):
     if type == 'public':
         return key.public_bytes(
@@ -39,11 +40,14 @@ def ser_key_pem(key, type: str):
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         )
+
+
 def deser_pem(key, type):
     if type == 'public':
         return serialization.load_pem_public_key(key)
     elif type == 'private':
         return serialization.load_pem_private_key(key, password=None)
+
 
 def encrypt_data(data, pubkey):
     data = pickle.dumps(data)
@@ -67,7 +71,8 @@ def encrypt_data(data, pubkey):
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
-    return pickle.dumps({'skey':encrypted_skey, 'cbc':cbc, 'ciphertext':ciphertext})
+    return pickle.dumps({'skey': encrypted_skey, 'cbc': cbc, 'ciphertext': ciphertext})
+
 
 def decrypt_data(encrypted_data, privkey):
     try:
@@ -93,39 +98,17 @@ def decrypt_data(encrypted_data, privkey):
         data = unpadder.update(decrypted_data) + unpadder.finalize()
         return pickle.loads(data)
     except Exception as error:
-        return {'type':'decrypt_error','data':f'{error}'}
+        return {'type': 'decrypt_error', 'data': f'{error}'}
 
-def fernet_initkey(workingdir):
-    passwd = ''
-    while True:
-        passwd = getpass(i18n.firstrun.passwd.input)
-        confirm = getpass(i18n.firstrun.passwd.confirm)
-        if passwd == confirm:
-            break
-        else:
-            print(i18n.firstrun.passwd.retry)
-    # Generate a Fernet key with the password and save the salt
-    salt = urandom(16)
-    with open(f"{workingdir}/creds/salt", "wb") as f:
-        f.write(salt)
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=600000,
-    )
-    key = urlsafe_b64encode(kdf.derive(bytes(passwd, 'utf-8')))
-    key = Fernet(key)
-    return key, passwd
-    
+
 """ THIS PART OF THE MODULE IS RESERVED FOR CHAT OPERATIONS """
 
-#def create_key_pair():
+# def create_key_pair():
 #    private_key_d = ec.generate_private_key(ec.SECP256K1())
 #    public_key_d = private_key_d.public_key()
 #    return private_key_d, public_key_d
 
-#def derive_key(eprkey, epbkey, keyinfo):
+# def derive_key(eprkey, epbkey, keyinfo):
 #    shared_key = eprkey.exchange(
 #        ec.ECDH(), epbkey)
 #    # Perform key derivation.
@@ -137,14 +120,14 @@ def fernet_initkey(workingdir):
 #    ).derive(shared_key)
 #    return derived_key
 
-#def encrypt_packet(data, key):
+# def encrypt_packet(data, key):
 #    data = pickle.dumps(data)
 #    aesgcm = AESGCM(key)
 #    nonce = urandom(12)  # Unique nonce for each message
 #    ciphertext = aesgcm.encrypt(nonce, data, None)
 #    return pickle.dumps({'nonce': nonce, 'ciphertext': ciphertext})
 
-#def decrypt_packet(data, key):
+# def decrypt_packet(data, key):
 #    aesgcm = AESGCM(key)
 #    nonce = data['nonce']
 #    ciphertext = data['ciphertext']

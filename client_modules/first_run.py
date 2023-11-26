@@ -2,10 +2,12 @@ import os
 from i18n import firstrun, savedata
 from yaml import dump as dumpyaml
 from . import encryption as e
-try: 
+
+try:
     from tkinter import filedialog
 except:
     pass
+
 
 def get_client_dir():
     while True:
@@ -19,6 +21,7 @@ def get_client_dir():
         finally:
             break
     return spath
+
 
 def setup_client_dir():
     while True:
@@ -34,8 +37,8 @@ def setup_client_dir():
                 print(savedata.creating, end=' ')
                 try:
                     os.mkdir(spath)
-                except OSError as e:
-                    print(f"{savedata.error}:\n{e}")
+                except OSError as error:
+                    print(f"{savedata.error}:\n{error}")
                     spath = input(f"{savedata.input_writable}:\n")
                 else:
                     print(savedata.created)
@@ -46,6 +49,7 @@ def setup_client_dir():
         elif os.path.exists(f'{spath}/creds'):
             print(savedata.data_exists)
     return spath
+
 
 def main():
     print(firstrun.welcome_message)
