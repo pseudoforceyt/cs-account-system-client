@@ -9,7 +9,6 @@ from getpass import getpass
 from base64 import urlsafe_b64encode
 import pickle
 import i18n
-import pickle
 
 
 def create_rsa_key_pair():
