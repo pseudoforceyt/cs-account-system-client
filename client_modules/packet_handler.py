@@ -89,7 +89,7 @@ async def auth(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
                 return None
             flag = en.decrypt_data(await websocket.recv(), CLIENT_CREDS['client_eprkey'])
             if flag['data']['sig'] == 'LOGIN_OK':
-                print(demo.end)
+                print(demo.login_success)
             else:
                 print(flag['data']['sig'] + ":", sig_map[flag['data']['sig']])
 
@@ -112,9 +112,11 @@ async def delete(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
     await websocket.send(en.encrypt_data({'type': 'DELETE', 'data': data}, SERVER_CREDS['server_epbkey']))
     captcha_prompt = en.decrypt_data(await websocket.recv(), CLIENT_CREDS['client_eprkey'])
     captcha_flag = await captcha(SERVER_CREDS, CLIENT_CREDS, websocket, captcha_prompt['data'])
-    print(captcha_flag + ":", sig_map[captcha_flag])
-    if captcha_flag == 'ACC_DELETE_SUCCESS':
-        os.remove(dir + '/creds/acc_token')
+    match captcha_flag:
+        case 'ACC_DELETE_SUCCESS':
+            os.remove(dir + '/creds/acc_token')
+        case other:
+            print(captcha_flag + ":", sig_map[captcha_flag])
 
 
 packet_map = {

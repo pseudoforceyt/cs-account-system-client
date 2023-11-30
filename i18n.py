@@ -46,9 +46,27 @@ class demo:
     token_nf = "You have to login first! Token not found."
     auth_err = "Token authentication failed. Please login again. Error:\n{}"
     logout_p = "Are you sure you want to log out?\nThis will reset your token and you will have to login again."
+    logout_cancel = "Logout cancelled."
     logout_success = "Successfully logged out. Token has been reset"
-    end = "You have been logged in successfully.\nYour session is now active and this concludes the demonstration.\nIf you exit the app and decide to login again, you can use > auth to do it."
+    login_success = "You have been logged in successfully.\nIf you exit the app and decide to login again, you can use > auth to do it."
+    del_p = "Are you sure? Account deletion is irreversible"
+    del_cancel = "Account deletion cancelled."
 
+class menu:
+    the_menu = """
+Account System Demonstration Frontend
+Welcome!
+Available Operations:
+> signup\t(Sign up)
+> login \t(Log in)
+> auth  \t(Authenticate)
+> logout\t(Logout)
+> del   \t(Delete)
+> exit  \t(Exit)
+"""
+    input_p = "What would you like to do?"
+    invalid_op = "Enter a valid operation."
+    exit_msg = "Goodbye!"
 
 class log:
     class tags:
@@ -62,9 +80,11 @@ class log:
 
 
 sig_map = {
+    'MISSING_CREDS': "A field in your form is empty. Please fill it again properly",
+    'INCORRECT_PASSWORD': 'The password you entered is incorrect. Check your password',
+    'ACCOUNT_NOT_FOUND': 'The requested account does not exist. Check your username/email',
     'CONN_OK': "Connection to the server was successful",
     'CAPTCHA_WRONG': "The CAPTCHA code you entered was wrong. Try performing the action again",
-    'SIGNUP_MISSING_CREDS': 'A field in your signup form is empty. Please signup again properly',
     'SIGNUP_USERNAME_ABOVE_LIMIT': 'Username exceeds 32 character limit',
     'SIGNUP_USERNAME_ALREADY_EXISTS': 'Username already exists',
     'SIGNUP_EMAIL_ABOVE_LIMIT': 'Your email ID is abnormally long. Are you sure its a valid address?',
@@ -72,13 +92,9 @@ sig_map = {
     'SIGNUP_DOB_INVALID': 'Date of birth is Invalid. Please enter it in YYYY-MM-DD or DD-MM-YYYY format.',
     'SIGNUP_PASSWORD_ABOVE_LIMIT': 'No way in heaven will you remember the password. Choose a smaller one.',
     'SIGNUP_ERR': 'Unexpected error while signing up, please try again.',
-    'LOGIN_MISSING_CREDS': 'A field in your form is empty. Please fill it again properly',
-    'LOGIN_INCORRECT_PASSWORD': 'The password you entered is incorrect. Check your password',
-    'LOGIN_ACCOUNT_NOT_FOUND': 'The requested account does not exist. Check your username/email',
     'TOKEN_EXPIRED': 'Your session has expired. Login again',
     'TOKEN_INVALID': 'Login again to fix this.',
     'LOGOUT_ERR': 'Unexpected error while logging out, please try again.',
     'NOT_LOGGED_IN': 'You need to be logged in to do that!',
-    'TOKEN_NOT_FOUND': 'The provided auth token does not exist on the server. Log in again',
-    'ACCOUNT_DNE': 'No such account found. Check your username/email'
+    'TOKEN_NOT_FOUND': 'The provided auth token does not exist on the server. Log in again'
 }
