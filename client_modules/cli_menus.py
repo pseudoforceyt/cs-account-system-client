@@ -1,7 +1,7 @@
 import os, sys
 from . import packet_handler as p
 import asyncio
-
+from i18n import demo
 
 def cls():
     # for windows
@@ -20,6 +20,7 @@ async def main_menu(SERVER_CREDS, CLIENT_CREDS, websocket, wdir):
     print("> login \t(Log in)")
     print("> auth  \t(Authenticate)")
     print("> logout\t(Logout)")
+    print("> del\t(Delete)")
     print("> exit  \t(Exit)")
     while True:
         print("What would you like to do?")
@@ -36,12 +37,20 @@ async def main_menu(SERVER_CREDS, CLIENT_CREDS, websocket, wdir):
                 return await p.auth(SERVER_CREDS, CLIENT_CREDS, websocket, wdir)
             case 'logout':
                 cls()
-                flag = await p.logout(SERVER_CREDS, CLIENT_CREDS, websocket, wdir)
-                if flag == 'CANCELLED':
-                    print("Cancelled.")
-                    continue
-                else:
+                if input(demo.logout_p + ' (y/N) > ').lower() == 'y':
+                    flag = await p.logout(SERVER_CREDS, CLIENT_CREDS, websocket, wdir)
                     return flag
+                else:
+                    print("Logout cancelled.")
+            case 'del':
+                cls()
+                print("Are you sure? Account deletion is irreversible")
+                c = input("(y/N) > ")
+                if c.lower() == 'y':
+                    flag = await p.delete(SERVER_CREDS, CLIENT_CREDS, websocket, wdir)
+                    return flag
+                else:
+                    print("Account deletion cancelled.")
             case 'exit':
                 print("Goodbye!")
                 sys.exit()

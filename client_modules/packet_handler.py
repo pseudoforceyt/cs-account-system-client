@@ -98,16 +98,23 @@ async def auth(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
 
 
 async def logout(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
-    if input(demo.logout_p + ' (y/N) > ').lower() == 'y':
-        await websocket.send(en.encrypt_data({'type': 'LOGOUT', 'data': {}}, SERVER_CREDS['server_epbkey']))
-        flag = en.decrypt_data(await websocket.recv(), CLIENT_CREDS['client_eprkey'])
-        match flag['data']['sig']:
-            case 'LOGOUT_OK':
-                print(demo.logout_success)
-            case other:
-                print(flag['data']['sig'] + ":", sig_map[flag['data']['sig']])
-    else:
-        print("Cancelled logout.")
+    await websocket.send(en.encrypt_data({'type': 'LOGOUT', 'data': {}}, SERVER_CREDS['server_epbkey']))
+    flag = en.decrypt_data(await websocket.recv(), CLIENT_CREDS['client_eprkey'])
+    match flag['data']['sig']:
+        case 'LOGOUT_OK':
+            print(demo.logout_success)
+        case other:
+            print(flag['data']['sig'] + ":", sig_map[flag['data']['sig']])
+
+
+async def delete(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
+    data = {'id': input(demo.id_p), 'password': getpass(demo.pass_p)}
+    await websocket.send(en.encrypt_data({'type': 'DELETE', 'data': data}, SERVER_CREDS['server_epbkey']))
+    captcha_prompt = en.decrypt_data(await websocket.recv(), CLIENT_CREDS['client_eprkey'])
+    captcha_flag = await captcha(SERVER_CREDS, CLIENT_CREDS, websocket, captcha_prompt['data'])
+    print(captcha_flag + ":", sig_map[captcha_flag])
+    if captcha_flag == 'ACC_DELETE_SUCCESS':
+        os.remove(dir + '/creds/acc_token')
 
 
 packet_map = {

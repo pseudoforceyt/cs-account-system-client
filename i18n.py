@@ -72,7 +72,7 @@ sig_map = {
     'SIGNUP_DOB_INVALID': 'Date of birth is Invalid. Please enter it in YYYY-MM-DD or DD-MM-YYYY format.',
     'SIGNUP_PASSWORD_ABOVE_LIMIT': 'No way in heaven will you remember the password. Choose a smaller one.',
     'SIGNUP_ERR': 'Unexpected error while signing up, please try again.',
-    'LOGIN_MISSING_CREDS': 'A field in your login form is empty. Please signup again properly',
+    'LOGIN_MISSING_CREDS': 'A field in your form is empty. Please fill it again properly',
     'LOGIN_INCORRECT_PASSWORD': 'The password you entered is incorrect. Check your password',
     'LOGIN_ACCOUNT_NOT_FOUND': 'The requested account does not exist. Check your username/email',
     'TOKEN_EXPIRED': 'Your session has expired. Login again',
