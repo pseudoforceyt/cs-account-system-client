@@ -103,6 +103,7 @@ async def logout(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
     match flag['data']['sig']:
         case 'LOGOUT_OK':
             print(demo.logout_success)
+            os.remove(dir + '/creds/acc_token')
         case other:
             print(flag['data']['sig'] + ":", sig_map[flag['data']['sig']])
 
@@ -115,6 +116,10 @@ async def delete(SERVER_CREDS, CLIENT_CREDS, websocket, dir):
     match captcha_flag:
         case 'ACC_DELETE_SUCCESS':
             os.remove(dir + '/creds/acc_token')
+            # os.remove('sayori.chr')
+            # os.remove('natsuki.chr')
+            # os.remove('yuri.chr')
+            # Just Monika.
         case other:
             print(captcha_flag + ":", sig_map[captcha_flag])
 
