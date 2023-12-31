@@ -1,7 +1,6 @@
 import asyncio
 import websockets
 import os
-import threading
 from cryptography.hazmat.primitives import serialization as s
 from client_modules import encryption as en
 from client_modules import packet_handler as p

@@ -1,14 +1,9 @@
-from cryptography.hazmat.primitives import serialization, hashes, hmac
-from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import padding as spadding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from os import urandom
-from getpass import getpass
-from base64 import urlsafe_b64encode
 import pickle
-import i18n
 
 
 def create_rsa_key_pair():
