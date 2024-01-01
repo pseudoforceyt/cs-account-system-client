@@ -1,7 +1,6 @@
 import asyncio
 import websockets
 import os
-from cryptography.hazmat.primitives import serialization as s
 from client_modules import encryption as en
 from client_modules import packet_handler as p
 from client_modules import cli_menus as cli
@@ -35,29 +34,52 @@ def execute_firstrun():
     exit()
 
 
-def check_missing_config(f, yaml, config):
-    try:
-        if yaml[config] is None:
-            print(i18n.firstrun.prompt1 + config)
-            if config == 'working_directory':
-                print(i18n.firstrun.prompt2)
-                while True:
-                    choice = input("(Y / N) > ")
-                    if choice.lower() == 'y':
-                        print(i18n.firstrun.exec)
-                        f.close()
-                        os.remove(f'{rootdir}/config.yml')
-                        first_run.main()
-                        print(i18n.firstrun.exit)
-                        exit()
-                    elif choice.lower() == 'n':
-                        fill_missing_config(f, yaml, 'working_directory')
-                        break
-            else:
-                fill_missing_config(f, yaml, config)
-    except KeyError:
-        print(i18n.firstrun.prompt1 + config)
-        fill_missing_config(f, yaml, config)
+# def check_missing_config(f, yaml, config):
+#     try:
+#         if yaml[config] is None:
+#             print(i18n.firstrun.prompt1 + config)
+#             if config == 'working_directory':
+#                 print(i18n.firstrun.prompt2)
+#                 while True:
+#                     choice = input("(Y / N) > ")
+#                     if choice.lower() == 'y':
+#                         print(i18n.firstrun.exec)
+#                         f.close()
+#                         os.remove(f'{rootdir}/config.yml')
+#                         first_run.main()
+#                         print(i18n.firstrun.exit)
+#                         exit()
+#                     elif choice.lower() == 'n':
+#                         fill_missing_config(f, yaml, 'working_directory')
+#                         break
+#             else:
+#                 fill_missing_config(f, yaml, config)
+#     except KeyError:
+#         print(i18n.firstrun.prompt1 + config)
+#         fill_missing_config(f, yaml, config)
+
+def check_missing_config(file, yaml_config, config_key):
+    if yaml_config.get(config_key) is not None:
+        return
+    print(i18n.firstrun.setting_not_found.format(config_key))
+
+    if config_key != 'working_directory':
+        fill_missing_config(file, yaml_config, config_key)
+        return
+    print(i18n.firstrun.ft_question)
+    
+    while True:
+        choice = input("(Y / N) > ").lower()
+        if choice == 'y':
+            print(i18n.firstrun.exec)
+            file.close()
+            os.remove(f'{rootdir}/config.yml')
+            first_run.main()
+            print(i18n.firstrun.exit)
+            exit()
+        elif choice == 'n':
+            fill_missing_config(file, yaml_config, 'working_directory')
+            break
 
 
 def fill_missing_config(f, yaml, config):
@@ -77,7 +99,7 @@ async def main(host, port):
         try:
             key = await websocket.recv()
             key = pickle.loads(key)
-            pubkey = s.load_pem_public_key(key['data'])
+            pubkey = en.deser_pem(key['data'])
             SERVER_CREDS['server_epbkey'] = pubkey
             print("RECEIVED SERVER PUBLIC KEY")
             await websocket.send(pickle.dumps({'type': 'CONN_ENCRYPT_C', 'data': CLIENT_CREDS['client_epbkey']}))
