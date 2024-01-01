@@ -99,7 +99,7 @@ async def main(host, port):
         try:
             key = await websocket.recv()
             key = pickle.loads(key)
-            pubkey = en.deser_pem(key['data'])
+            pubkey = en.deser_pem(key['data'], 'public')
             SERVER_CREDS['server_epbkey'] = pubkey
             print("RECEIVED SERVER PUBLIC KEY")
             await websocket.send(pickle.dumps({'type': 'CONN_ENCRYPT_C', 'data': CLIENT_CREDS['client_epbkey']}))

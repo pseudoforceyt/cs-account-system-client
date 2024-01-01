@@ -32,14 +32,16 @@ def setup_client_dir():
                 break
             # If either the path leads to a file or is not writable (or invalid)
             elif os.path.exists(spath) and not os.path.isdir(spath):
-                spath = input(f"{savedata.not_a_dir}:\n")
+                print(f"{savedata.not_a_dir}:\n")
+                spath = get_client_dir()
             elif not os.path.exists(spath):
                 print(savedata.creating, end=' ')
                 try:
                     os.mkdir(spath)
                 except OSError as error:
                     print(f"{savedata.error}:\n{error}")
-                    spath = input(f"{savedata.input_writable}:\n")
+                    print(f"{savedata.input_writable}:\n")
+                    spath = get_client_dir()
                 else:
                     print(savedata.created)
                     break
